@@ -87,11 +87,18 @@ def load_config(cfg_filename, LOG):
                 print ("Configuration is missing 'logging' section.")
             sys.exit(2)
 
-        if 'mrt_logging' not in cfg:
+        if 'bgp4mp' not in cfg:
             if LOG:
-                LOG.error("Configuration is missing 'mrt_logging' section.")
+                LOG.error("Configuration is missing 'bgp4mp' section.")
             else:
-                print ("Configuration is missing 'mrt_logging' section.")
+                print ("Configuration is missing 'bgp4mp' section.")
+            sys.exit(2)
+
+        if 'table_dump' not in cfg:
+            if LOG:
+                LOG.error("Configuration is missing 'table_dump' section.")
+            else:
+                print ("Configuration is missing 'table_dump' section.")
             sys.exit(2)
 
     except (IOError, yaml.YAMLError), e:
@@ -170,7 +177,8 @@ def main():
     cfg_dict = manager.dict()
     cfg_dict['max_queue_size'] = cfg['max_queue_size']
     cfg_dict['logging'] = cfg['logging']
-    cfg_dict['mrt_logging'] = cfg['mrt_logging']
+    cfg_dict['bgp4mp'] = cfg['bgp4mp']
+    cfg_dict['table_dump'] = cfg['table_dump']
     cfg_dict['kafka'] = cfg['kafka']
 
     # Setup signal handers

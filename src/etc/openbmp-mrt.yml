@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-# OpenBMP forwarder consumer configuration
+# OpenBMP MRT configuration
 # -------------------------------------------------------------------------
 
 # Max size of messages in queue to be forwarded/written
@@ -15,17 +15,28 @@ kafka:
   offset_reset_largest: False
 
 #
-# MRT Log settings
+# MRT TABLE_DUMP/snapshots settings
 #
-mrt_logging:
+table_dump:
+  # API/DB_REST settings (github.com/openbmp/db_rest)
+  #   Table dumps are pulled from DB_REST, which is state maintained
+  api:
+    host: demo-int.openbmp.org
+    port: 8001
 
-  log_dir:
-    # Where BGP4MP (updates) are logged
-    bgp4mp    : /tmp/openbmp-mrt/updates
+  interval:
+    # Interval is in minutes.  Minimum value is 5
+    minutes: 60
 
-    # Where TABLE_DUMP (rib) are logged
-    table_dump: /tmp/openbmp-mrt/table
+  log_dir: /tmp/openbmp-mrt/table
 
+#
+# MRT BGP4MP (updates/change) settings
+#
+bgp4mp:
+  log_dir: /tmp/openbmp-mrt/updates
+
+  # Rotate BGP4MP (updates/changes)
   rotate:
     when        : 'm'     # See python logging.handlers TimedRotatingFileHandler for more details
     interval    : 5       # Interval based on 'when'

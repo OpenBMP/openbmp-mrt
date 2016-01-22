@@ -1,5 +1,5 @@
 OpenBMP MRT
-=====================
+===========
 A lightweight OpenBMP consumer that dumps BMP messages on a time based interval to a file.
 The MRT file can then be loaded in any compliant MRT parser.  Validation testing has been with
 [libbgpdump](https://bitbucket.org/ripencc/bgpdump/wiki/Home).
