@@ -1,0 +1,80 @@
+# -------------------------------------------------------------------------
+# OpenBMP forwarder consumer configuration
+# -------------------------------------------------------------------------
+
+# Max size of messages in queue to be forwarded/written
+max_queue_size: 1000
+
+#
+# Local Kafka settings - BMP raw messages are read from this instance
+#
+kafka:
+  servers             : ['kafka-int.openbmp.org:9092']
+  client_id           : 'openbmp-mrt'
+  group_id            : 'openbmp-mrt'
+  offset_reset_largest: False
+
+#
+# MRT Log settings
+#
+mrt_logging:
+
+  log_dir:
+    # Where BGP4MP (updates) are logged
+    bgp4mp    : /tmp/openbmp-mrt/updates
+
+    # Where TABLE_DUMP (rib) are logged
+    table_dump: /tmp/openbmp-mrt/table
+
+  rotate:
+    when        : 'm'     # See python logging.handlers TimedRotatingFileHandler for more details
+    interval    : 5       # Interval based on 'when'
+    backupCount : 30      # Number of files to keep
+
+
+#
+# App Log settings
+#
+logging:
+  version: 1
+  disable_existing_loggers: True
+
+  formatters:
+    default:
+      format: '%(asctime)s | %(levelname)-8s | %(name)s | %(message)s'
+
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: DEBUG
+      formatter: default
+      stream: ext://sys.stdout
+
+    file:
+      class: logging.handlers.RotatingFileHandler
+      level: DEBUG
+      formatter: default
+      maxBytes: 20971520
+      backupCount: 10
+      encoding: utf8
+      filename: openbmp-mrt.log
+
+  loggers:
+    # BMP Consuemr log messages
+    bmp_consumer:
+      level: INFO
+      handlers: [console]
+      propagate: no
+
+    # MRT BGP4PM Writer log messages
+    mrt_bgp4mp_writer:
+      level: INFO
+      handlers: [console]
+      propagate: no
+
+    # General/main program messages
+    root:
+      level: INFO
+      handlers: [console]
+
+
