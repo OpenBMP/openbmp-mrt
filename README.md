@@ -6,9 +6,9 @@ The MRT file can then be loaded in any compliant MRT parser.  Validation testing
 
 **[RFC6396](https://tools.ietf.org/html/rfc6396)** - Multi-Threaded Routing Toolkit (MRT) Routing Information Export Format
 
-* BGP4MP_STATE_CHANGE_AS4 - Peer up/down events
-* BGP4MP_MESSAGE - BGP update messages
-* TABLE_DUMP_V2 - Table dumps require the use of openbmp-mysql-consumer/db_rest
+* BGP4MP\_STATE\_CHANGE_AS4 - Peer up/down events
+* BGP4MP\_MESSAGE - BGP update messages
+* TABLE\_DUMP\_V2 - Table dumps require the use of openbmp-mysql-consumer (MySQL/MariaDB)
 
 > #### NOTE
 > Apparently libbgpdump does not support extended time mrt headers.  For this reason the dumps
@@ -20,7 +20,7 @@ BGP4MP Support
 State change messages as well as update messages are logged in MRT BGP4MP format.  Considering
 the feed is from a message bus (kafka) which may have existed for a while, there is a chance that
 BMP PEER UP/DOWN messages are not seen because those were sent a while back.  In this case UPDATE messages
-are still received but since the UP/OPEN message has yet been seen, the BGP4MP_MESSAGE_AS4 header will
+are still received but since the UP/OPEN message has yet been seen, the BGP4MP\_MESSAGE\_AS4 header will
 have **Local AS Number** set to zero and **Local IP Addresss** set to loopback (127.0.0.1 or ::1).
 This has **no impact** on BGP parsing. Once the PEER UP/DOWN messages are seen, the local variables will be
 populated.
@@ -32,10 +32,10 @@ populated.
 
 TABLE_DUMP Support
 ------------------
-MRT TABLE_DUMP_V2 is a *SNAPSHOT* in time per **COLLECTOR** -->  **ROUTER** --> **PEER**.  This requires continual
+MRT TABLE\_DUMP\_V2 is a *SNAPSHOT* in time per **COLLECTOR** -->  **ROUTER** --> **PEER**.  This requires continual
 state tracking in order to know which NLRI's (by address family) are current (not withdrawn) for the snapshot
-period.  [DB_REST](https://github.com/openbmp/db_rest) via the MySQL/MariaDB consumer is used to handle the state
-tracking.   TABLE_DUMP_V2 is enabled by configuration, specifically by defining the the DB_REST hostname and port.
+period.  [MySQL Consumer](https://github.com/openbmp/openbmp-mysql-consumer) is used to handle the state
+tracking. TABLE\_DUMP\_V2 is enabled by configuration.
 
 Installation
 ------------
@@ -48,8 +48,11 @@ You can either run the code within the **git** directory or you can install it i
     sudo apt-get install python-dev python-pip libsnappy-dev
     sudo pip install python-snappy
     sudo pip install kafka-python
+    sudo pip install mysql-connector-python
     sudo pip install pyyaml
 
+> #### Mac OS and for the Latest Python MySQL connector
+> Download the latest for many platforms from: [https://dev.mysql.com/downloads/connector/python/](https://dev.mysql.com/downloads/connector/python/)
 
 ### Install:
 
@@ -61,6 +64,7 @@ Configuration
 -------------
 Configuration is in YAML format.  See [src/etc/openbmp-mrt.yml](src/etc/openbmp-mrt.yml) for configuration example
 and details.
+
 
 Running
 -------

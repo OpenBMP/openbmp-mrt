@@ -20,6 +20,7 @@ from multiprocessing import Queue, Manager
 from openbmp.logger import LoggerThread
 from openbmp.bmp_consumer import BMPConsumer
 from openbmp.bmp_bgp4mp import MrtBgp4MpWriter
+from openbmp.mrt_table_dump import MrtTableDumper
 
 # Root logger
 LOG = None
@@ -47,13 +48,12 @@ def signal_handler(signum, frame):
     RUNNING = False
 
 
-def load_config(cfg_filename, LOG):
+def load_config(cfg_filename):
     """ Load and validate the configuration from YAML
 
         Some defaults are applied if any settings are missing.
 
         :param cfg_filename:    Configuration filename to load
-        :param LOG:             logger
 
         :return: Configuration dictionary is returned
     """
@@ -81,24 +81,15 @@ def load_config(cfg_filename, LOG):
             cfg['kafka']['offset_reset_largest'] = False
 
         if 'logging' not in cfg:
-            if LOG:
-                LOG.error("Configuration is missing 'logging' section.")
-            else:
-                print ("Configuration is missing 'logging' section.")
+            print ("Configuration is missing 'logging' section.")
             sys.exit(2)
 
         if 'bgp4mp' not in cfg:
-            if LOG:
-                LOG.error("Configuration is missing 'bgp4mp' section.")
-            else:
-                print ("Configuration is missing 'bgp4mp' section.")
+            print ("Configuration is missing 'bgp4mp' section.")
             sys.exit(2)
 
         if 'table_dump' not in cfg:
-            if LOG:
-                LOG.error("Configuration is missing 'table_dump' section.")
-            else:
-                print ("Configuration is missing 'table_dump' section.")
+            print ("Configuration is missing 'table_dump' section.")
             sys.exit(2)
 
     except (IOError, yaml.YAMLError), e:
@@ -170,7 +161,7 @@ def main():
     global LOG, RUNNING
 
     cmd_cfg = parse_cmd_args(sys.argv)
-    cfg = load_config(cmd_cfg['cfg_filename'], LOG)
+    cfg = load_config(cmd_cfg['cfg_filename'])
 
     # Shared dictionary between processes
     manager = Manager()
@@ -180,6 +171,11 @@ def main():
     cfg_dict['bgp4mp'] = cfg['bgp4mp']
     cfg_dict['table_dump'] = cfg['table_dump']
     cfg_dict['kafka'] = cfg['kafka']
+
+    # Check to make sure something is enabled
+    if cfg['bgp4mp']['enabled'] == False and cfg['table_dump']['enabled'] == False:
+        print("Both bgp4mp and table_dump is globally disabled, thus nothing to do.\n   Enable at least one of them.")
+        sys.exit(2)
 
     # Setup signal handers
     signal.signal(signal.SIGTERM, signal_handler)
@@ -191,18 +187,24 @@ def main():
     thread_logger = LoggerThread(log_queue, cfg_dict['logging'])
     thread_logger.start()
 
-    LOG = logging.getLogger()
+    LOG = logging.getLogger('openbmp_mrt')
 
-    # Use manager queue to ensure no duplicates
-    mrt_bgp4mp_queue = manager.Queue(cfg_dict['max_queue_size'])
+    if cfg['bgp4mp']['enabled'] == True:
+        # Use manager queue to ensure no duplicates
+        mrt_bgp4mp_queue = manager.Queue(cfg_dict['max_queue_size'])
 
-    # Start the BMP consumer process
-    proc_consumer = BMPConsumer(cfg_dict, mrt_bgp4mp_queue, log_queue)
-    proc_consumer.start()
+        # Start the BMP consumer process
+        proc_consumer = BMPConsumer(cfg_dict, mrt_bgp4mp_queue, log_queue)
+        proc_consumer.start()
 
-    # Start the MRT BMP to BGP4MP writer process
-    bgp4mp_writer = MrtBgp4MpWriter(cfg_dict, mrt_bgp4mp_queue, log_queue)
-    bgp4mp_writer.start()
+        # Start the MRT BMP to BGP4MP writer process
+        proc_bgp4mp_writer = MrtBgp4MpWriter(cfg_dict, mrt_bgp4mp_queue, log_queue)
+        proc_bgp4mp_writer.start()
+
+    if cfg['table_dump']['enabled'] == True:
+        # Start the table dump monitor
+        proc_table_dumper = MrtTableDumper(cfg_dict, log_queue)
+        proc_table_dumper.start()
 
     LOG.info("Threads started")
 
@@ -217,11 +219,17 @@ def main():
             RUNNING = False
             break
 
-    proc_consumer.stop()
-    time.sleep(1)
+    # Stopped, stop sub processes
+    if cfg['bgp4mp']['enabled'] == True:
+        proc_consumer.stop()
+        time.sleep(1)
 
-    bgp4mp_writer.stop()
-    time.sleep(1)
+        proc_bgp4mp_writer.stop()
+        time.sleep(1)
+
+    if cfg['table_dump']['enabled'] == True:
+        proc_table_dumper.stop()
+        time.sleep(1)
 
     manager.shutdown()
 
