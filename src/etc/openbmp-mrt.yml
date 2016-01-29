@@ -84,29 +84,29 @@ logging:
     # BMP Consuemr log messages
     mrt_table_dumper:
       level: INFO
-      handlers: [console]
+      handlers: [file]
       propagate: no
 
     # BMP Consuemr log messages
     bmp_consumer:
       level: INFO
-      handlers: [console]
+      handlers: [file]
       propagate: no
 
     # MRT BGP4PM Writer log messages
     mrt_bgp4mp_writer:
       level: INFO
-      handlers: [console]
+      handlers: [file]
       propagate: no
 
     # main program messages
     openbmp_mrt:
       level: INFO
-      handlers: [console]
+      handlers: [file]
 
     # General program messages
     root:
       level: INFO
-      handlers: [console]
+      handlers: [file]
 
 
