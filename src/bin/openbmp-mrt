@@ -17,10 +17,10 @@ import time
 import signal
 
 from multiprocessing import Queue, Manager
-from openbmp.logger import LoggerThread
-from openbmp.bmp_consumer import BMPConsumer
-from openbmp.bmp_bgp4mp import MrtBgp4MpWriter
-from openbmp.mrt_table_dump import MrtTableDumper
+from openbmp.mrt.logger import LoggerThread
+from openbmp.mrt.bmp_consumer import BMPConsumer
+from openbmp.mrt.bmp_bgp4mp import MrtBgp4MpWriter
+from openbmp.mrt.mrt_table_dump import MrtTableDumper
 
 # Root logger
 LOG = None
