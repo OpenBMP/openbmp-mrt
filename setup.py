@@ -9,7 +9,7 @@ setup(name='openbmp-mrt',
       author_email='tim@openbmp.org',
       url='',
       data_files=[('etc', ['src/etc/openbmp-mrt.yml'])],
-      package_dir={'': 'src/site-packages'},
+      package_dir={'openbmp': 'src/site-packages/openbmp'},
       packages=['openbmp'],
       scripts=['src/bin/openbmp-mrt']
      )
