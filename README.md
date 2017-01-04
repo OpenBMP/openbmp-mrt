@@ -50,6 +50,12 @@ You can either run the code within the **git** directory or you can install it i
     sudo pip install kafka-python
     sudo pip install mysql-connector-python
     sudo pip install pyyaml
+    
+    git clone https://github.com/OpenBMP/openbmp-python-api-message.git
+    cd openbmp-python-api-message
+    sudo python setup.py install
+
+Installation of openbmp-python-api-message library is shown above.
 
 > #### Mac OS and for the Latest Python MySQL connector
 > Download the latest for many platforms from: [https://dev.mysql.com/downloads/connector/python/](https://dev.mysql.com/downloads/connector/python/)
